@@ -6,23 +6,25 @@ import (
 	"net/url"
 	"path"
 
-	"github.com/AndreyAD1/url-shortener/internal/app/service"
+	srv "github.com/AndreyAD1/url-shortener/internal/app/service"
 )
 
-func ShortURLHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		createShortURLHandler(w, r)
-		return
+func ShortURLHandler(service srv.Service) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			createShortURLHandler(w, r, service)
+			return
+		}
+		if r.Method == http.MethodGet {
+			getFullURLHandler(w, r, service)
+			return
+		}
+		errMsg := "Only GET and POST methods are allowed"
+		http.Error(w, errMsg, http.StatusMethodNotAllowed)
 	}
-	if r.Method == http.MethodGet {
-		getFullURLHandler(w, r)
-		return
-	}
-	errMsg := "Only GET and POST requests are allowed"
-	http.Error(w, errMsg, http.StatusMethodNotAllowed)
 }
 
-func createShortURLHandler(w http.ResponseWriter, r *http.Request) {
+func createShortURLHandler(w http.ResponseWriter, r *http.Request, service srv.Service) {
 	if r.URL.Path != "/" {
 		http.Error(w, "", http.StatusNotFound)
 		return
@@ -37,13 +39,17 @@ func createShortURLHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	shortURL := service.GetShortURL(*incomingURL)
+	shortURL, err := service.GetShortURL(*incomingURL)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(shortURL))
 }
 
-func getFullURLHandler(w http.ResponseWriter, r *http.Request) {
+func getFullURLHandler(w http.ResponseWriter, r *http.Request, service srv.Service) {
 	path, urlID := path.Split(r.URL.Path)
 	if path != "/" || urlID == "" {
 		http.Error(w, "", http.StatusNotFound)
@@ -52,6 +58,7 @@ func getFullURLHandler(w http.ResponseWriter, r *http.Request) {
 	fullURL, err := service.GetFullURL(urlID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 	w.Header().Set("Location", fullURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
