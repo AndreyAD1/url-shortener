@@ -3,11 +3,12 @@ package main
 import (
 	"log"
 
-	"github.com/AndreyAD1/url-shortener/internal/app"
+	"github.com/AndreyAD1/url-shortener/internal/app/config"
+	"github.com/AndreyAD1/url-shortener/internal/app/server"
 )
 
 func main() {
-	server := app.NewServer(app.ServerAddress)
-	err := server.ListenAndServe()
+	srv := server.NewServer(config.ServerAddress)
+	err := srv.ListenAndServe()
 	log.Println(err)
 }

@@ -1,10 +1,12 @@
-package app
+package handlers
 
 import (
 	"io"
 	"net/http"
 	"net/url"
 	"path"
+
+	"github.com/AndreyAD1/url-shortener/internal/app/service"
 )
 
 func ShortURLHandler(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +37,7 @@ func createShortURLHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	shortURL := GetShortURL(*incomingURL)
+	shortURL := service.GetShortURL(*incomingURL)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(shortURL))
@@ -47,7 +49,7 @@ func getFullURLHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "", http.StatusNotFound)
 		return
 	}
-	fullURL, err := GetFullURL(urlID)
+	fullURL, err := service.GetFullURL(urlID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}

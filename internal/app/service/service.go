@@ -1,10 +1,13 @@
-package app
+package service
 
 import (
 	"fmt"
 	"math/rand"
 	u "net/url"
 	"time"
+
+	"github.com/AndreyAD1/url-shortener/internal/app/config"
+	"github.com/AndreyAD1/url-shortener/internal/app/storage"
 )
 
 func init() {
@@ -13,7 +16,7 @@ func init() {
 
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
-func getRandomString(n int) string {
+func GetRandomString(n int) string {
 	b := make([]rune, n)
 	for i := range b {
 		b[i] = letterRunes[rand.Intn(len(letterRunes))]
@@ -22,14 +25,14 @@ func getRandomString(n int) string {
 }
 
 func GetShortURL(url u.URL) string {
-	randomString := getRandomString(ShortURLLength)
-	shortURL := "http://" + ServerAddress + "/" + randomString
-	URLStorage[randomString] = url
+	randomString := GetRandomString(config.ShortURLLength)
+	shortURL := "http://" + config.ServerAddress + "/" + randomString
+	storage.URLStorage[randomString] = url
 	return shortURL
 }
 
 func GetFullURL(urlID string) (string, error) {
-	fullURL, ok := URLStorage[urlID]
+	fullURL, ok := storage.URLStorage[urlID]
 	if !ok {
 		return "", fmt.Errorf("URL not found")
 	}
