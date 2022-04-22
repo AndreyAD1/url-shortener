@@ -9,9 +9,14 @@ import (
 )
 
 func NewServer(address string) *http.Server {
+	return &http.Server{Addr: address, Handler: getHandler()}
+}
+
+func getHandler() http.Handler {
 	db := storage.NewStorage()
 	URLService := service.Service{Storage: db}
-	handler := http.HandlerFunc(handlers.ShortURLHandler(URLService))
-	http.HandleFunc("/", handler)
-	return &http.Server{Addr: address}
+	handler := http.NewServeMux()
+	handlerFunc := http.HandlerFunc(handlers.ShortURLHandler(URLService))
+	handler.Handle("/", handlerFunc)
+	return handler
 }
