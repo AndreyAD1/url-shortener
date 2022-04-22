@@ -9,10 +9,10 @@ import (
 )
 
 func NewServer(address string) *http.Server {
-	return &http.Server{Addr: address, Handler: getHandler()}
+	return &http.Server{Addr: address, Handler: GetHandler()}
 }
 
-func getHandler() http.Handler {
+func GetHandler() http.Handler {
 	db := storage.NewStorage()
 	URLService := service.Service{Storage: db}
 	handler := http.NewServeMux()

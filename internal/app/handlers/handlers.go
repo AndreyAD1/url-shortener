@@ -34,7 +34,7 @@ func createShortURLHandler(w http.ResponseWriter, r *http.Request, service srv.S
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	incomingURL, err := url.Parse(string(requestBody))
+	incomingURL, err := url.ParseRequestURI(string(requestBody))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
