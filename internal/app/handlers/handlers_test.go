@@ -83,8 +83,8 @@ func TestShortURLHandler_GET(t *testing.T) {
 	testURL := "http://test/url"
 	parsedTestURL, err := url.Parse(testURL)
 	require.NoError(t, err)
-	testUrlID := "test-url-id"
-	db.WriteURL(testUrlID, *parsedTestURL)
+	testURLID := "test-url-id"
+	db.WriteURL(testURLID, *parsedTestURL)
 
 	tests := []struct {
 		Name                 string
@@ -108,7 +108,7 @@ func TestShortURLHandler_GET(t *testing.T) {
 		},
 		{
 			"valid request",
-			"http://localhost/" + testUrlID,
+			"http://localhost/" + testURLID,
 			http.StatusTemporaryRedirect,
 		},
 	}
