@@ -19,11 +19,11 @@ func TestShortURLHandler(t *testing.T) {
 	handler := ShortURLHandler(URLService)
 
 	tests := []struct {
-		name string
+		Name string
 		Method string
 		Path string
 		Body string
-		expectedResponseCode int
+		ExpectedResponseCode int
 	}{
 		{
 			"invalid request method",
@@ -55,7 +55,7 @@ func TestShortURLHandler(t *testing.T) {
 		},
 	}
 	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+		t.Run(tc.Name, func(t *testing.T) {
 			var err error
 			var request *http.Request
 			requestBody := bytes.NewBufferString(tc.Body)
@@ -71,7 +71,7 @@ func TestShortURLHandler(t *testing.T) {
 			result := recorder.Result()
 			defer result.Body.Close()
 
-			assert.Equal(t, tc.expectedResponseCode, result.StatusCode)
+			assert.Equal(t, tc.ExpectedResponseCode, result.StatusCode)
 		})
 	}
 }
@@ -87,9 +87,9 @@ func TestShortURLHandler_GET(t *testing.T) {
 	db.WriteURL(testUrlID, *parsedTestURL)
 
 	tests := []struct {
-		name string
+		Name string
 		Path string
-		expectedResponseCode int
+		ExpectedResponseCode int
 	}{
 		{
 			"Too long path",
@@ -113,15 +113,15 @@ func TestShortURLHandler_GET(t *testing.T) {
 		},
 	}
 	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
+		t.Run(tc.Name, func(t *testing.T) {
 			request, err := http.NewRequest(http.MethodGet, tc.Path, nil)
 			require.NoError(t, err)
 			recorder := httptest.NewRecorder()
 			handler(recorder, request)
 			result := recorder.Result()
 			defer result.Body.Close()
-			assert.Equal(t, tc.expectedResponseCode, result.StatusCode)
-			if tc.expectedResponseCode == http.StatusTemporaryRedirect {
+			assert.Equal(t, tc.ExpectedResponseCode, result.StatusCode)
+			if tc.ExpectedResponseCode == http.StatusTemporaryRedirect {
 				require.Equal(t, testURL, result.Header.Get("Location"))
 			}
 		})
