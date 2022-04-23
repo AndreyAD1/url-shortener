@@ -4,24 +4,21 @@ import (
 	"testing"
 
 	"github.com/AndreyAD1/url-shortener/internal/app/service"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_getRandomString(t *testing.T) {
-	type args struct {
-		n int
-	}
 	tests := []struct {
 		name string
-		args args
-		want string
+		length int
 	}{
-		// TODO: Add test cases.
+		{"common", 10},
+		{"empty", 0},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := service.GetRandomString(tt.args.n); got != tt.want {
-				t.Errorf("getRandomString() = %v, want %v", got, tt.want)
-			}
+			randomString := service.GetRandomString(tt.length)
+			require.Equal(t, tt.length, len(randomString))
 		})
 	}
 }
