@@ -2,10 +2,8 @@ package handlers
 
 import (
 	"bytes"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/AndreyAD1/url-shortener/internal/app/service"
@@ -14,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestShortURLHandler(t *testing.T) {
+func TestShortURLHandler_POST(t *testing.T) {
 	db := storage.NewStorage()
 	URLService := service.Service{Storage: db}
 	handler := ShortURLHandler(URLService)
@@ -25,15 +23,34 @@ func TestShortURLHandler(t *testing.T) {
 		Path string
 		Body string
 		expectedResponseCode int
-		expectedResponseBody string
 	}{
 		{
 			"invalid request method",
-			"PUT",
+			http.MethodPut,
 			"whatever",
 			"",
 			http.StatusMethodNotAllowed,
-			"Only GET and POST methods are allowed",
+		},
+		{
+			"POST with invalid path",
+			http.MethodPost,
+			"localhost/some/path",
+			"whatever",
+			http.StatusNotFound,
+		},
+		{
+			"POST with invalid URI",
+			http.MethodPost,
+			"http://localhost/",
+			"invalidURI",
+			http.StatusBadRequest,
+		},
+		{
+			"POST happy pass",
+			http.MethodPost,
+			"http://localhost/",
+			"http://some_test/url/test",
+			http.StatusCreated,
 		},
 	}
 	for _, tc := range tests {
@@ -54,10 +71,6 @@ func TestShortURLHandler(t *testing.T) {
 			defer result.Body.Close()
 
 			assert.Equal(t, tc.expectedResponseCode, result.StatusCode)
-			body, err := ioutil.ReadAll(result.Body)
-			require.NoError(t, err)
-			bodyString := strings.TrimSpace(string(body))
-			assert.Equal(t, tc.expectedResponseBody, bodyString)
 		})
 	}
 }
