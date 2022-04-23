@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/AndreyAD1/url-shortener/internal/app/service"
@@ -12,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestShortURLHandler_POST(t *testing.T) {
+func TestShortURLHandler(t *testing.T) {
 	db := storage.NewStorage()
 	URLService := service.Service{Storage: db}
 	handler := ShortURLHandler(URLService)
@@ -71,6 +72,58 @@ func TestShortURLHandler_POST(t *testing.T) {
 			defer result.Body.Close()
 
 			assert.Equal(t, tc.expectedResponseCode, result.StatusCode)
+		})
+	}
+}
+
+func TestShortURLHandler_GET(t *testing.T) {
+	db := storage.NewStorage()
+	URLService := service.Service{Storage: db}
+	handler := ShortURLHandler(URLService)
+	testURL := "http://test/url"
+	parsedTestURL, err := url.Parse(testURL)
+	require.NoError(t, err)
+	testUrlID := "test-url-id"
+	db.WriteURL(testUrlID, *parsedTestURL)
+
+	tests := []struct {
+		name string
+		Path string
+		expectedResponseCode int
+	}{
+		{
+			"Too long path",
+			"http://localhost/some/path",
+			http.StatusNotFound,
+		},
+		{
+			"no URL id",
+			"http://localhost/",
+			http.StatusNotFound,
+		},
+		{
+			"absent URL id",
+			"http://localhost/absent-id",
+			http.StatusBadRequest,
+		},
+		{
+			"valid request",
+			"http://localhost/" + testUrlID,
+			http.StatusTemporaryRedirect,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			request, err := http.NewRequest(http.MethodGet, tc.Path, nil)
+			require.NoError(t, err)
+			recorder := httptest.NewRecorder()
+			handler(recorder, request)
+			result := recorder.Result()
+			defer result.Body.Close()
+			assert.Equal(t, tc.expectedResponseCode, result.StatusCode)
+			if tc.expectedResponseCode == http.StatusTemporaryRedirect {
+				require.Equal(t, testURL, result.Header.Get("Location"))
+			}
 		})
 	}
 }
