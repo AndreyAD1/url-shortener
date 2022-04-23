@@ -9,7 +9,7 @@ import (
 
 func Test_getRandomString(t *testing.T) {
 	tests := []struct {
-		name string
+		name   string
 		length int
 	}{
 		{"common", 10},

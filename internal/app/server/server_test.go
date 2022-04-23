@@ -24,8 +24,8 @@ func getTestServer(t *testing.T) *httptest.Server {
 	listener, err := net.Listen("tcp", config.ServerAddress)
 	require.NoError(t, err)
 	server := &httptest.Server{
-		Listener: listener, 
-		Config: &http.Server{Handler: server.GetHandler()},
+		Listener: listener,
+		Config:   &http.Server{Handler: server.GetHandler()},
 	}
 	server.Start()
 	return server
@@ -38,9 +38,9 @@ func Test_GetShortURL(t *testing.T) {
 	defer cancel()
 	requestBody := bytes.NewBufferString(testURL)
 	request, err := http.NewRequestWithContext(
-		ctx, 
-		http.MethodPost, 
-		server.URL, 
+		ctx,
+		http.MethodPost,
+		server.URL,
 		requestBody,
 	)
 	require.NoError(t, err)
@@ -63,9 +63,9 @@ func getShortURL(t *testing.T, server *httptest.Server) string {
 	defer cancel()
 	requestBody := bytes.NewBufferString(testURL)
 	request, err := http.NewRequestWithContext(
-		ctx, 
-		http.MethodPost, 
-		server.URL, 
+		ctx,
+		http.MethodPost,
+		server.URL,
 		requestBody,
 	)
 	require.NoError(t, err)
@@ -86,14 +86,14 @@ func Test_GetFullURL(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	request, err := http.NewRequestWithContext(
-		ctx, 
-		http.MethodGet, 
-		shortURL, 
+		ctx,
+		http.MethodGet,
+		shortURL,
 		nil,
 	)
 	require.NoError(t, err)
 	client := &http.Client{
-		CheckRedirect: func (req *http.Request, via []*http.Request) error {
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
 	}

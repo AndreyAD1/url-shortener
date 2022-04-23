@@ -19,10 +19,10 @@ func TestShortURLHandler(t *testing.T) {
 	handler := ShortURLHandler(URLService)
 
 	tests := []struct {
-		Name string
-		Method string
-		Path string
-		Body string
+		Name                 string
+		Method               string
+		Path                 string
+		Body                 string
 		ExpectedResponseCode int
 	}{
 		{
@@ -87,8 +87,8 @@ func TestShortURLHandler_GET(t *testing.T) {
 	db.WriteURL(testUrlID, *parsedTestURL)
 
 	tests := []struct {
-		Name string
-		Path string
+		Name                 string
+		Path                 string
 		ExpectedResponseCode int
 	}{
 		{
