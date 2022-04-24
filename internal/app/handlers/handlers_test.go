@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestShortURLHandler(t *testing.T) {
+func TestCreateShortURLHandler(t *testing.T) {
 	db := storage.NewStorage()
 	URLService := service.Service{Storage: db}
 	handler := ShortURLHandler(URLService)

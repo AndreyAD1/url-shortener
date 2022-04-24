@@ -26,8 +26,5 @@ func GetHandler() http.Handler {
 		"/{id}",
 		handlers.GetFullURLHandler(URLService),
 	).Methods(http.MethodGet)
-	// handler := http.NewServeMux()
-	// handlerFunc := http.HandlerFunc(handlers.ShortURLHandler(URLService))
-	// handler.Handle("/", handlerFunc)
 	return router
 }
