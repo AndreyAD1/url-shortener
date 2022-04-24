@@ -4,43 +4,62 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"path"
 
 	srv "github.com/AndreyAD1/url-shortener/internal/app/service"
-	"github.com/gorilla/mux"
 )
 
-func CreateShortURLHandler(service srv.Service) func(w http.ResponseWriter, r *http.Request) {
+func ShortURLHandler(service srv.Service) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		requestBody, err := io.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if r.Method == http.MethodPost {
+			createShortURLHandler(w, r, service)
 			return
 		}
-		incomingURL, err := url.ParseRequestURI(string(requestBody))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		if r.Method == http.MethodGet {
+			getFullURLHandler(w, r, service)
 			return
 		}
-		shortURL, err := service.GetShortURL(*incomingURL)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(shortURL))
+		errMsg := "Only GET and POST methods are allowed"
+		http.Error(w, errMsg, http.StatusMethodNotAllowed)
 	}
 }
 
-func GetFullURLHandler(service srv.Service) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		urlID := mux.Vars(r)["id"]
-		fullURL, err := service.GetFullURL(urlID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		w.Header().Set("Location", fullURL)
-		w.WriteHeader(http.StatusTemporaryRedirect)
+func createShortURLHandler(w http.ResponseWriter, r *http.Request, service srv.Service) {
+	if r.URL.Path != "/" {
+		http.Error(w, "", http.StatusNotFound)
+		return
 	}
+	requestBody, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	incomingURL, err := url.ParseRequestURI(string(requestBody))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	shortURL, err := service.GetShortURL(*incomingURL)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte(shortURL))
+}
+
+func getFullURLHandler(w http.ResponseWriter, r *http.Request, service srv.Service) {
+	path, urlID := path.Split(r.URL.Path)
+	if path != "/" || urlID == "" {
+		http.Error(w, "", http.StatusNotFound)
+		return
+	}
+	fullURL, err := service.GetFullURL(urlID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Location", fullURL)
+	w.WriteHeader(http.StatusTemporaryRedirect)
 }
