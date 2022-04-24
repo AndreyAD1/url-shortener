@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 
 	"github.com/AndreyAD1/url-shortener/internal/app/service"
@@ -16,7 +15,7 @@ import (
 func TestCreateShortURLHandler(t *testing.T) {
 	db := storage.NewStorage()
 	URLService := service.Service{Storage: db}
-	handler := ShortURLHandler(URLService)
+	handler := CreateShortURLHandler(URLService)
 
 	tests := []struct {
 		Name                 string
@@ -25,20 +24,6 @@ func TestCreateShortURLHandler(t *testing.T) {
 		Body                 string
 		ExpectedResponseCode int
 	}{
-		{
-			"invalid request method",
-			http.MethodPut,
-			"whatever",
-			"",
-			http.StatusMethodNotAllowed,
-		},
-		{
-			"POST with invalid path",
-			http.MethodPost,
-			"localhost/some/path",
-			"whatever",
-			http.StatusNotFound,
-		},
 		{
 			"POST with invalid URI",
 			http.MethodPost,
@@ -76,15 +61,10 @@ func TestCreateShortURLHandler(t *testing.T) {
 	}
 }
 
-func TestShortURLHandler_GET(t *testing.T) {
+func TestGetFullURLHandler(t *testing.T) {
 	db := storage.NewStorage()
 	URLService := service.Service{Storage: db}
-	handler := ShortURLHandler(URLService)
-	testURL := "http://test/url"
-	parsedTestURL, err := url.Parse(testURL)
-	require.NoError(t, err)
-	testURLID := "test-url-id"
-	db.WriteURL(testURLID, *parsedTestURL)
+	handler := GetFullURLHandler(URLService)
 
 	tests := []struct {
 		Name                 string
@@ -92,24 +72,9 @@ func TestShortURLHandler_GET(t *testing.T) {
 		ExpectedResponseCode int
 	}{
 		{
-			"Too long path",
-			"http://localhost/some/path",
-			http.StatusNotFound,
-		},
-		{
-			"no URL id",
-			"http://localhost/",
-			http.StatusNotFound,
-		},
-		{
 			"absent URL id",
 			"http://localhost/absent-id",
 			http.StatusBadRequest,
-		},
-		{
-			"valid request",
-			"http://localhost/" + testURLID,
-			http.StatusTemporaryRedirect,
 		},
 	}
 	for _, tc := range tests {
@@ -120,10 +85,7 @@ func TestShortURLHandler_GET(t *testing.T) {
 			handler(recorder, request)
 			result := recorder.Result()
 			defer result.Body.Close()
-			assert.Equal(t, tc.ExpectedResponseCode, result.StatusCode)
-			if tc.ExpectedResponseCode == http.StatusTemporaryRedirect {
-				require.Equal(t, testURL, result.Header.Get("Location"))
-			}
+			require.Equal(t, tc.ExpectedResponseCode, result.StatusCode)
 		})
 	}
 }
