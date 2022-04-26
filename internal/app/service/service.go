@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"math/rand"
 	u "net/url"
 	"time"
@@ -17,7 +16,7 @@ func init() {
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 type Service struct {
-	Storage s.Storage
+	Storage s.Repository
 }
 
 func GetRandomString(n int) string {
@@ -41,7 +40,7 @@ func (s Service) GetShortURL(url u.URL) (string, error) {
 func (s Service) GetFullURL(urlID string) (string, error) {
 	fullURL, err := s.Storage.GetURL(urlID)
 	if err != nil {
-		return "", fmt.Errorf("URL not found")
+		return "", err
 	}
 	return fullURL.String(), nil
 }
