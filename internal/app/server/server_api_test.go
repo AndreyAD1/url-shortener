@@ -33,7 +33,7 @@ func Test_GetShortURLviaAPI(t *testing.T) {
 	request, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
-		server.URL + "/api/shorten_url",
+		server.URL+"/api/shorten_url",
 		requestBody,
 	)
 	require.NoError(t, err)
