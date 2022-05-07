@@ -51,7 +51,7 @@ type CreateShortURLRequest struct {
 }
 
 type Response struct {
-	Result any `json:"result"`
+	Result interface{} `json:"result"`
 }
 
 func CreateShortURLApiHandler(service srv.Service) func(w http.ResponseWriter, r *http.Request) {
