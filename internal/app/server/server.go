@@ -27,7 +27,7 @@ func GetHandler() http.Handler {
 		handlers.GetFullURLHandler(URLService),
 	).Methods(http.MethodGet)
 	router.HandleFunc(
-		"/api/shorten_url",
+		"/api/shorten",
 		handlers.CreateShortURLApiHandler(URLService),
 	)
 	return router
