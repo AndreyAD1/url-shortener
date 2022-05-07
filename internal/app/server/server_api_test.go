@@ -26,7 +26,8 @@ func Test_GetShortURLviaAPI(t *testing.T) {
 	defer server.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
-	requestBytes, err := json.Marshal(handlers.CreateShortURLRequest{URL: testURL})
+	payload := handlers.CreateShortURLRequest{URL: testURL}
+	requestBytes, err := json.Marshal(payload)
 	require.NoError(t, err)
 	requestBody := bytes.NewBuffer(requestBytes)
 	request, err := http.NewRequestWithContext(
@@ -43,10 +44,10 @@ func Test_GetShortURLviaAPI(t *testing.T) {
 	require.Equal(t, http.StatusCreated, response.StatusCode)
 	body, err := io.ReadAll(response.Body)
 	require.NoError(t, err)
-	var responseInfo expectedResponse
-	err = json.Unmarshal(body, &responseInfo)
+	var responsePayload expectedResponse
+	err = json.Unmarshal(body, &responsePayload)
 	require.NoError(t, err)
-	returnedURL, err := url.ParseRequestURI(responseInfo.Result)
+	returnedURL, err := url.ParseRequestURI(responsePayload.Result)
 	require.NoError(t, err)
 	assert.Equal(t, "http", returnedURL.Scheme)
 	assert.Equal(t, config.ServerAddress, returnedURL.Host)

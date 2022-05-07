@@ -54,7 +54,7 @@ type Response struct {
 	Result any `json:"result"`
 }
 
-func CreateShortURLJSONHandler(service srv.Service) func(w http.ResponseWriter, r *http.Request) {
+func CreateShortURLApiHandler(service srv.Service) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		requestBody, err := io.ReadAll(r.Body)
 		if err != nil {
