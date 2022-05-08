@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/AndreyAD1/url-shortener/internal/app/config"
 	"github.com/AndreyAD1/url-shortener/internal/app/handlers"
 )
 
@@ -50,6 +49,6 @@ func Test_GetShortURLviaAPI(t *testing.T) {
 	returnedURL, err := url.ParseRequestURI(responsePayload.Result)
 	require.NoError(t, err)
 	assert.Equal(t, "http", returnedURL.Scheme)
-	assert.Equal(t, config.ServerAddress, returnedURL.Host)
-	assert.Equal(t, config.ShortURLLength, len(returnedURL.Path[1:]))
+	assert.Equal(t, testConfig.ServerAddress, returnedURL.Host)
+	assert.Equal(t, testConfig.ShortURLLength, len(returnedURL.Path[1:]))
 }

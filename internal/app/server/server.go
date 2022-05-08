@@ -5,18 +5,23 @@ import (
 
 	"github.com/gorilla/mux"
 
+	"github.com/AndreyAD1/url-shortener/internal/app/config"
 	"github.com/AndreyAD1/url-shortener/internal/app/handlers"
 	"github.com/AndreyAD1/url-shortener/internal/app/service"
 	"github.com/AndreyAD1/url-shortener/internal/app/storage"
 )
 
-func NewServer(address string) *http.Server {
-	return &http.Server{Addr: address, Handler: GetHandler()}
+func NewServer(cfg config.StartupConfig) *http.Server {
+	return &http.Server{Addr: cfg.ServerAddress, Handler: GetHandler(cfg)}
 }
 
-func GetHandler() http.Handler {
+func GetHandler(cfg config.StartupConfig) http.Handler {
 	db := storage.NewStorage()
-	URLService := service.Service{Storage: db}
+	URLService := service.Service{
+		Storage:        db,
+		BaseURL:        cfg.BaseURL,
+		ShortURLLength: cfg.ShortURLLength,
+	}
 	router := mux.NewRouter()
 	router.HandleFunc(
 		"/",

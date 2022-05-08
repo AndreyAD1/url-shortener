@@ -5,7 +5,6 @@ import (
 	u "net/url"
 	"time"
 
-	"github.com/AndreyAD1/url-shortener/internal/app/config"
 	s "github.com/AndreyAD1/url-shortener/internal/app/storage"
 )
 
@@ -16,7 +15,9 @@ func init() {
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 type Service struct {
-	Storage s.Repository
+	Storage        s.Repository
+	BaseURL        string
+	ShortURLLength int
 }
 
 func GetRandomString(n int) string {
@@ -28,12 +29,12 @@ func GetRandomString(n int) string {
 }
 
 func (s Service) GetShortURL(url u.URL) (string, error) {
-	randomString := GetRandomString(config.ShortURLLength)
+	randomString := GetRandomString(s.ShortURLLength)
 	err := s.Storage.WriteURL(randomString, url)
 	if err != nil {
 		return "", err
 	}
-	shortURL := "http://" + config.ServerAddress + "/" + randomString
+	shortURL := "http://" + s.BaseURL + "/" + randomString
 	return shortURL, nil
 }
 
