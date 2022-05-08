@@ -22,7 +22,7 @@ const testURL = "https://github.com/AndreyAD1"
 
 var testConfig = config.StartupConfig{
 	ServerAddress:  "localhost:8080",
-	BaseURL:        "localhost:8080",
+	BaseURL:        "http://localhost:8080",
 	ShortURLLength: 10,
 }
 

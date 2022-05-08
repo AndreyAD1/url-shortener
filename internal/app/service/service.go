@@ -34,7 +34,7 @@ func (s Service) GetShortURL(url u.URL) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	shortURL := "http://" + s.BaseURL + "/" + randomString
+	shortURL := s.BaseURL + "/" + randomString
 	return shortURL, nil
 }
 
