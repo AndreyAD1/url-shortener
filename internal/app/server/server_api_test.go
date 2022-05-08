@@ -48,7 +48,9 @@ func Test_GetShortURLviaAPI(t *testing.T) {
 	require.NoError(t, err)
 	returnedURL, err := url.ParseRequestURI(responsePayload.Result)
 	require.NoError(t, err)
-	assert.Equal(t, "http", returnedURL.Scheme)
-	assert.Equal(t, testConfig.ServerAddress, returnedURL.Host)
+	expectedURL, err := url.ParseRequestURI(testConfig.BaseURL)
+	require.NoError(t, err)
+	assert.Equal(t, expectedURL.Scheme, returnedURL.Scheme)
+	assert.Equal(t, expectedURL.Host, returnedURL.Host)
 	assert.Equal(t, testConfig.ShortURLLength, len(returnedURL.Path[1:]))
 }
