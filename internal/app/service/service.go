@@ -2,7 +2,6 @@ package service
 
 import (
 	"math/rand"
-	u "net/url"
 	"time"
 
 	s "github.com/AndreyAD1/url-shortener/internal/app/storage"
@@ -28,7 +27,7 @@ func GetRandomString(n int) string {
 	return string(b)
 }
 
-func (s Service) GetShortURL(url u.URL) (string, error) {
+func (s Service) GetShortURL(url string) (string, error) {
 	randomString := GetRandomString(s.ShortURLLength)
 	err := s.Storage.WriteURL(randomString, url)
 	if err != nil {
@@ -43,5 +42,5 @@ func (s Service) GetFullURL(urlID string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return fullURL.String(), nil
+	return fullURL, nil
 }
