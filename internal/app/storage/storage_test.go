@@ -74,50 +74,50 @@ func TestFileStorage_GetURL(t *testing.T) {
 		urlID string
 	}
 	tests := []struct {
-		name    string
-		newFile bool
-		fields  fields
-		args    args
-		savedURLs []URLInfo
-		expectedURL    string
-		wantErr bool
+		name        string
+		newFile     bool
+		fields      fields
+		args        args
+		savedURLs   []URLInfo
+		expectedURL string
+		wantErr     bool
 	}{
 		{"no storage file", true, fields{"test.txt"}, args{"123"}, []URLInfo{}, "", true},
 		{"no saved URLs", false, fields{"test.txt"}, args{"123"}, []URLInfo{}, "", true},
 		{
-			"one saved URL - not found", 
-			false, 
-			fields{"test.txt"}, 
-			args{"123"}, 
-			[]URLInfo{{"999", "some test url"}}, 
-			"", 
+			"one saved URL - not found",
+			false,
+			fields{"test.txt"},
+			args{"123"},
+			[]URLInfo{{"999", "some test url"}},
+			"",
 			true,
 		},
 		{
-			"two saved URLs - not found", 
-			false, 
-			fields{"test.txt"}, 
-			args{"123"}, 
-			[]URLInfo{{"999", "some test url"}, {"111", "another test url"}}, 
-			"", 
+			"two saved URLs - not found",
+			false,
+			fields{"test.txt"},
+			args{"123"},
+			[]URLInfo{{"999", "some test url"}, {"111", "another test url"}},
+			"",
 			true,
 		},
 		{
 			"two saved URLs - found first",
-			false, 
-			fields{"test.txt"}, 
-			args{"999"}, 
-			[]URLInfo{{"999", "some test url"}, {"111", "another test url"}}, 
-			"some test url", 
+			false,
+			fields{"test.txt"},
+			args{"999"},
+			[]URLInfo{{"999", "some test url"}, {"111", "another test url"}},
+			"some test url",
 			false,
 		},
 		{
 			"two saved URLs - found second",
-			false, 
-			fields{"test.txt"}, 
-			args{"111"}, 
-			[]URLInfo{{"999", "some test url"}, {"111", "another test url"}}, 
-			"another test url", 
+			false,
+			fields{"test.txt"},
+			args{"111"},
+			[]URLInfo{{"999", "some test url"}, {"111", "another test url"}},
+			"another test url",
 			false,
 		},
 	}
