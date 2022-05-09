@@ -1,7 +1,6 @@
 package server
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -17,10 +16,7 @@ func NewServer(cfg config.StartupConfig) *http.Server {
 }
 
 func GetHandler(cfg config.StartupConfig) http.Handler {
-	db, err := storage.NewStorage(cfg.FileStoragePath)
-	if err != nil {
-		log.Fatal(err)
-	}
+	db := storage.NewStorage(cfg.FileStoragePath)
 	URLService := service.Service{
 		Storage:        db,
 		BaseURL:        cfg.BaseURL,

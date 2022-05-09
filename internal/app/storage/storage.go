@@ -75,9 +75,9 @@ func (s FileStorage) GetURL(urlID string) (string, error) {
 	return fullURL, nil
 }
 
-func NewStorage(storageFile string) (Repository, error) {
+func NewStorage(storageFile string) Repository {
 	if storageFile == "" {
-		return MemoryStorage(make(map[string]string)), nil
+		return MemoryStorage(make(map[string]string))
 	}
-	return FileStorage{filename: storageFile}, nil
+	return FileStorage{filename: storageFile}
 }

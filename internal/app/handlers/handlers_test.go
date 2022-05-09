@@ -16,7 +16,7 @@ import (
 )
 
 func TestCreateShortURLHandler(t *testing.T) {
-	db, _ := storage.NewStorage("")
+	db := storage.NewStorage("")
 	URLService := service.Service{Storage: db}
 	handler := CreateShortURLHandler(URLService)
 
@@ -65,7 +65,7 @@ func TestCreateShortURLHandler(t *testing.T) {
 }
 
 func TestGetFullURLHandler(t *testing.T) {
-	db, _ := storage.NewStorage("")
+	db := storage.NewStorage("")
 	URLService := service.Service{Storage: db}
 	handler := GetFullURLHandler(URLService)
 
@@ -98,7 +98,7 @@ type expectedAPIResponse struct {
 }
 
 func TestCreateShortURLApiHandler(t *testing.T) {
-	db, _ := storage.NewStorage("")
+	db := storage.NewStorage("")
 	URLService := service.Service{Storage: db}
 	handler := CreateShortURLApiHandler(URLService)
 
