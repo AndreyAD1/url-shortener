@@ -7,6 +7,7 @@ import (
 
 	"github.com/AndreyAD1/url-shortener/internal/app/config"
 	"github.com/AndreyAD1/url-shortener/internal/app/handlers"
+	"github.com/AndreyAD1/url-shortener/internal/app/middlewares"
 	"github.com/AndreyAD1/url-shortener/internal/app/service"
 	"github.com/AndreyAD1/url-shortener/internal/app/storage"
 )
@@ -35,5 +36,6 @@ func GetHandler(cfg config.StartupConfig) http.Handler {
 		"/api/shorten",
 		handlers.CreateShortURLApiHandler(URLService),
 	)
+	router.Use(middlewares.GzipMiddleware)
 	return router
 }
