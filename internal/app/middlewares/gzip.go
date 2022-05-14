@@ -13,8 +13,23 @@ type gzipWriter struct {
 	Writer io.Writer
 }
 
+var compressedContentTypes = []string {
+	"application/javascript",
+	"application/json",
+	"text/css",
+	"text/html",
+	"text/plain",
+	"text/xml",
+}
+
 func (w gzipWriter) Write(b []byte) (int, error) {
-	return w.Writer.Write(b)
+	currentContentType := w.Header().Get("Content-Type")
+	for _, compressedContentType := range compressedContentTypes {
+		if strings.Contains(currentContentType, compressedContentType) {
+			return w.Writer.Write(b)
+		}
+	}
+	return w.Write(b)
 }
 
 func DecompressGzipRequest(next http.Handler) http.Handler {
