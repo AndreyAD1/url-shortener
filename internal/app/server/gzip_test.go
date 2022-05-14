@@ -21,10 +21,10 @@ func Test_SendGzipEncodedRequest(t *testing.T) {
 	server := getTestServer(t)
 	defer server.Close()
 	testCases := []struct {
-		name string
-		requestIsCompressed bool
+		name                     string
+		requestIsCompressed      bool
 		expectCompressedResponse bool
-	} {
+	}{
 		{
 			"Compressed request, full response",
 			true,
@@ -44,14 +44,14 @@ func Test_SendGzipEncodedRequest(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(
-				context.Background(), 
+				context.Background(),
 				1*time.Second,
 			)
 			defer cancel()
 			payload := handlers.CreateShortURLRequest{URL: testURL}
 			requestBytes, err := json.Marshal(payload)
 			require.NoError(t, err)
-			
+
 			var requestBodyReader bytes.Buffer
 			if testCase.requestIsCompressed {
 				gzipWriter := gzip.NewWriter(&requestBodyReader)
@@ -63,7 +63,6 @@ func Test_SendGzipEncodedRequest(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			
 			request, err := http.NewRequestWithContext(
 				ctx,
 				http.MethodPost,
@@ -81,9 +80,9 @@ func Test_SendGzipEncodedRequest(t *testing.T) {
 			response, err := client.Do(request)
 			require.NoError(t, err)
 			defer response.Body.Close()
-			
+
 			require.Equal(t, http.StatusCreated, response.StatusCode)
-			
+
 			var body []byte
 			if testCase.expectCompressedResponse {
 				require.Equal(t, "gzip", response.Header.Get("Content-Encoding"))

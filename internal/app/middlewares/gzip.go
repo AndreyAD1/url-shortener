@@ -10,10 +10,11 @@ import (
 
 type gzipWriter struct {
 	http.ResponseWriter
-	Writer io.Writer
+	ZipWriter    io.Writer
+	CommonWriter http.ResponseWriter
 }
 
-var compressedContentTypes = []string {
+var compressedContentTypes = []string{
 	"application/javascript",
 	"application/json",
 	"text/css",
@@ -26,10 +27,10 @@ func (w gzipWriter) Write(b []byte) (int, error) {
 	currentContentType := w.Header().Get("Content-Type")
 	for _, compressedContentType := range compressedContentTypes {
 		if strings.Contains(currentContentType, compressedContentType) {
-			return w.Writer.Write(b)
+			return w.ZipWriter.Write(b)
 		}
 	}
-	return w.Write(b)
+	return w.CommonWriter.Write(b)
 }
 
 func DecompressGzipRequest(next http.Handler) http.Handler {
@@ -72,11 +73,11 @@ func CompressResponseToGzip(next http.Handler) http.Handler {
 		}
 		gz, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
 		if err != nil {
-			io.WriteString(w, err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		defer gz.Close()
 		w.Header().Set("Content-Encoding", "gzip")
-		next.ServeHTTP(gzipWriter{ResponseWriter: w, Writer: gz}, r)
+		next.ServeHTTP(gzipWriter{w, gz, w}, r)
 	})
 }
