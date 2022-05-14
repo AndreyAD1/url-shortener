@@ -36,6 +36,7 @@ func GetHandler(cfg config.StartupConfig) http.Handler {
 		"/api/shorten",
 		handlers.CreateShortURLApiHandler(URLService),
 	)
-	router.Use(middlewares.GzipMiddleware)
+	router.Use(middlewares.DecodeGzipRequest)
+	router.Use(middlewares.EncodeResponseToGzip)
 	return router
 }
