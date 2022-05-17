@@ -85,11 +85,10 @@ func (s *FileStorage) GetURL(urlID string) (string, error) {
 }
 
 func NewStorage(storageFile string) Repository {
-	var mu sync.RWMutex
 	if storageFile == "" {
-		storage := MemoryStorage{make(map[string]string), mu}
+		storage := MemoryStorage{storage: make(map[string]string)}
 		return &storage
 	}
-	storage := FileStorage{storageFile, mu}
+	storage := FileStorage{filename: storageFile}
 	return &storage
 }

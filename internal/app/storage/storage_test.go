@@ -3,13 +3,10 @@ package storage
 import (
 	"encoding/json"
 	"os"
-	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
-
-var mu sync.RWMutex
 
 func TestNewStorage(t *testing.T) {
 	type args struct {
@@ -20,8 +17,8 @@ func TestNewStorage(t *testing.T) {
 		args args
 		want Repository
 	}{
-		{"memory", args{""}, &MemoryStorage{make(map[string]string), mu}},
-		{"file", args{"test.txt"}, &FileStorage{"test.txt", mu}},
+		{"memory", args{""}, &MemoryStorage{storage: make(map[string]string)}},
+		{"file", args{"test.txt"}, &FileStorage{filename: "test.txt"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
