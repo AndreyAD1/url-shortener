@@ -27,7 +27,7 @@ func GetRandomString(n int) string {
 	return string(b)
 }
 
-func (s Service) GetShortURL(url string) (string, error) {
+func (s Service) CreateShortURL(url string) (string, error) {
 	randomString := GetRandomString(s.ShortURLLength)
 	err := s.Storage.WriteURL(randomString, url)
 	if err != nil {

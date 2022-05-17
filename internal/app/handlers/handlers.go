@@ -22,7 +22,7 @@ func CreateShortURLHandler(service srv.Service) func(w http.ResponseWriter, r *h
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		shortURL, err := service.GetShortURL(incomingURL)
+		shortURL, err := service.CreateShortURL(incomingURL)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -70,18 +70,17 @@ func CreateShortURLApiHandler(service srv.Service) func(w http.ResponseWriter, r
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		shortURL, err := service.GetShortURL(requestInfo.URL)
+		shortURL, err := service.CreateShortURL(requestInfo.URL)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusCreated)
-		responseBody, err := json.Marshal(Response{Result: shortURL})
+		err = json.NewEncoder(w).Encode(Response{Result: shortURL})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		w.Write(responseBody)
 	}
 }
