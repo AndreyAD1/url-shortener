@@ -57,7 +57,6 @@ func (s FileStorage) GetURL(urlID string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	storageContent := make(map[string]string)
 	decoder := json.NewDecoder(file)
 	for {
 		URLItem := &URLInfo{}
@@ -66,13 +65,11 @@ func (s FileStorage) GetURL(urlID string) (string, error) {
 			log.Printf("storage decoder error: %v", err)
 			break
 		}
-		storageContent[URLItem.ID] = URLItem.URL
+		if URLItem.ID == urlID {
+			return URLItem.URL, nil
+		}
 	}
-	fullURL, ok := storageContent[urlID]
-	if !ok {
-		return fullURL, fmt.Errorf("no URL was found")
-	}
-	return fullURL, nil
+	return "", fmt.Errorf("no URL was found")
 }
 
 func NewStorage(storageFile string) Repository {
