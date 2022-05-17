@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 )
 
 type Repository interface {
@@ -14,29 +15,38 @@ type Repository interface {
 
 type FileStorage struct {
 	filename string
+	sync.RWMutex
 }
 
-type MemoryStorage map[string]string
-
+type MemoryStorage struct {
+	storage map[string]string
+	sync.RWMutex
+}
 type URLInfo struct {
 	ID  string
 	URL string
 }
 
-func (s MemoryStorage) WriteURL(urlID string, fullURL string) error {
-	s[urlID] = fullURL
+func (s *MemoryStorage) WriteURL(urlID string, fullURL string) error {
+	s.Lock()
+	defer s.Unlock()
+	s.storage[urlID] = fullURL
 	return nil
 }
 
-func (s MemoryStorage) GetURL(urlID string) (string, error) {
-	fullURL, ok := s[urlID]
+func (s *MemoryStorage) GetURL(urlID string) (string, error) {
+	s.RLock()
+	defer s.RUnlock()
+	fullURL, ok := s.storage[urlID]
 	if !ok {
 		return fullURL, fmt.Errorf("no URL was found")
 	}
 	return fullURL, nil
 }
 
-func (s FileStorage) WriteURL(urlID string, fullURL string) error {
+func (s *FileStorage) WriteURL(urlID string, fullURL string) error {
+	s.Lock()
+	defer s.Unlock()
 	fileFlag := os.O_WRONLY | os.O_CREATE | os.O_APPEND
 	file, err := os.OpenFile(s.filename, fileFlag, 0777)
 	if err != nil {
@@ -51,7 +61,9 @@ func (s FileStorage) WriteURL(urlID string, fullURL string) error {
 	return nil
 }
 
-func (s FileStorage) GetURL(urlID string) (string, error) {
+func (s *FileStorage) GetURL(urlID string) (string, error) {
+	s.RLock()
+	defer s.RUnlock()
 	fileFlag := os.O_RDONLY | os.O_CREATE
 	file, err := os.OpenFile(s.filename, fileFlag, 0777)
 	if err != nil {
@@ -73,8 +85,11 @@ func (s FileStorage) GetURL(urlID string) (string, error) {
 }
 
 func NewStorage(storageFile string) Repository {
+	var mu sync.RWMutex
 	if storageFile == "" {
-		return MemoryStorage(make(map[string]string))
+		storage := MemoryStorage{make(map[string]string), mu}
+		return &storage
 	}
-	return FileStorage{filename: storageFile}
+	storage := FileStorage{storageFile, mu}
+	return &storage
 }
