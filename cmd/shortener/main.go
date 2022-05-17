@@ -10,19 +10,10 @@ import (
 	"github.com/AndreyAD1/url-shortener/internal/app/server"
 )
 
-var (
-	serverAddress   *string
-	baseURL         *string
-	fileStoragePath *string
-)
-
-func init() {
-	serverAddress = flag.String("a", "", "a server address")
-	baseURL = flag.String("b", "", "a shorten URL host")
-	fileStoragePath = flag.String("f", "", "a path to a file storage")
-}
-
 func main() {
+	serverAddress := flag.String("a", "", "a server address")
+	baseURL := flag.String("b", "", "a shorten URL host")
+	fileStoragePath := flag.String("f", "", "a path to a file storage")
 	cfg := config.StartupConfig{}
 	if err := env.Parse(&cfg); err != nil {
 		log.Fatalf("%+v\n", err)
