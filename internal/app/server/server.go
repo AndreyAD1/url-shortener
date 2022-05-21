@@ -23,18 +23,19 @@ func GetHandler(cfg config.StartupConfig) http.Handler {
 		BaseURL:        cfg.BaseURL,
 		ShortURLLength: cfg.ShortURLLength,
 	}
+	handlers := handlers.HandlerContainer{URLService: URLService}
 	router := mux.NewRouter()
 	router.HandleFunc(
 		"/",
-		handlers.CreateShortURLHandler(URLService),
+		handlers.CreateShortURLHandler(),
 	).Methods(http.MethodPost)
 	router.HandleFunc(
 		"/{id}",
-		handlers.GetFullURLHandler(URLService),
+		handlers.GetFullURLHandler(),
 	).Methods(http.MethodGet)
 	router.HandleFunc(
 		"/api/shorten",
-		handlers.CreateShortURLApiHandler(URLService),
+		handlers.CreateShortURLApiHandler(),
 	)
 	router.Use(middlewares.DecompressGzipRequest)
 	router.Use(middlewares.CompressResponseToGzip)

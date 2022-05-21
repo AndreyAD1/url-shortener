@@ -10,7 +10,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func CreateShortURLHandler(service srv.Service) func(w http.ResponseWriter, r *http.Request) {
+type HandlerContainer struct {
+	URLService srv.Service
+}
+
+func (h HandlerContainer) CreateShortURLHandler() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		requestBody, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -22,7 +26,7 @@ func CreateShortURLHandler(service srv.Service) func(w http.ResponseWriter, r *h
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		shortURL, err := service.CreateShortURL(incomingURL)
+		shortURL, err := h.URLService.CreateShortURL(incomingURL)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -33,10 +37,10 @@ func CreateShortURLHandler(service srv.Service) func(w http.ResponseWriter, r *h
 	}
 }
 
-func GetFullURLHandler(service srv.Service) func(w http.ResponseWriter, r *http.Request) {
+func (h HandlerContainer) GetFullURLHandler() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		urlID := mux.Vars(r)["id"]
-		fullURL, err := service.GetFullURL(urlID)
+		fullURL, err := h.URLService.GetFullURL(urlID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -54,7 +58,7 @@ type Response struct {
 	Result interface{} `json:"result"`
 }
 
-func CreateShortURLApiHandler(service srv.Service) func(w http.ResponseWriter, r *http.Request) {
+func (h HandlerContainer) CreateShortURLApiHandler() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		requestBody, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -70,7 +74,7 @@ func CreateShortURLApiHandler(service srv.Service) func(w http.ResponseWriter, r
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		shortURL, err := service.CreateShortURL(requestInfo.URL)
+		shortURL, err := h.URLService.CreateShortURL(requestInfo.URL)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
