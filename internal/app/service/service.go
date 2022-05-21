@@ -42,5 +42,8 @@ func (s Service) GetFullURL(urlID string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return fullURL, nil
+	if fullURL == nil {
+		return "", ErrorNotFound
+	}
+	return *fullURL, nil
 }

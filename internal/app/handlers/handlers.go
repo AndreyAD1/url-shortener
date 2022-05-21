@@ -2,17 +2,14 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
 
-	srv "github.com/AndreyAD1/url-shortener/internal/app/service"
+	"github.com/AndreyAD1/url-shortener/internal/app/service"
 	"github.com/gorilla/mux"
 )
-
-type HandlerContainer struct {
-	URLService srv.Service
-}
 
 func (h HandlerContainer) CreateShortURLHandler() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -41,21 +38,17 @@ func (h HandlerContainer) GetFullURLHandler() func(w http.ResponseWriter, r *htt
 	return func(w http.ResponseWriter, r *http.Request) {
 		urlID := mux.Vars(r)["id"]
 		fullURL, err := h.URLService.GetFullURL(urlID)
-		if err != nil {
+		if errors.Is(err, service.ErrorNotFound) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Location", fullURL)
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	}
-}
-
-type CreateShortURLRequest struct {
-	URL string `json:"url"`
-}
-
-type Response struct {
-	Result interface{} `json:"result"`
 }
 
 func (h HandlerContainer) CreateShortURLApiHandler() func(w http.ResponseWriter, r *http.Request) {

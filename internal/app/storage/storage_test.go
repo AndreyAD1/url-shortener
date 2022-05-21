@@ -79,19 +79,19 @@ func TestFileStorage_GetURL(t *testing.T) {
 		fields      fields
 		args        args
 		savedURLs   []URLInfo
+		URLFound    bool
 		expectedURL string
-		wantErr     bool
 	}{
-		{"no storage file", true, fields{"test.txt"}, args{"123"}, []URLInfo{}, "", true},
-		{"no saved URLs", false, fields{"test.txt"}, args{"123"}, []URLInfo{}, "", true},
+		{"no storage file", true, fields{"test.txt"}, args{"123"}, []URLInfo{}, false, ""},
+		{"no saved URLs", false, fields{"test.txt"}, args{"123"}, []URLInfo{}, false, ""},
 		{
 			"one saved URL - not found",
 			false,
 			fields{"test.txt"},
 			args{"123"},
 			[]URLInfo{{"999", "some test url"}},
+			false,
 			"",
-			true,
 		},
 		{
 			"two saved URLs - not found",
@@ -99,8 +99,8 @@ func TestFileStorage_GetURL(t *testing.T) {
 			fields{"test.txt"},
 			args{"123"},
 			[]URLInfo{{"999", "some test url"}, {"111", "another test url"}},
+			false,
 			"",
-			true,
 		},
 		{
 			"two saved URLs - found first",
@@ -108,8 +108,8 @@ func TestFileStorage_GetURL(t *testing.T) {
 			fields{"test.txt"},
 			args{"999"},
 			[]URLInfo{{"999", "some test url"}, {"111", "another test url"}},
+			true,
 			"some test url",
-			false,
 		},
 		{
 			"two saved URLs - found second",
@@ -117,8 +117,8 @@ func TestFileStorage_GetURL(t *testing.T) {
 			fields{"test.txt"},
 			args{"111"},
 			[]URLInfo{{"999", "some test url"}, {"111", "another test url"}},
+			true,
 			"another test url",
-			false,
 		},
 	}
 	for _, tt := range tests {
@@ -134,12 +134,12 @@ func TestFileStorage_GetURL(t *testing.T) {
 				require.NoError(t, err)
 			}
 			returnedURL, err := s.GetURL(tt.args.urlID)
-			if tt.wantErr {
-				require.Equal(t, "", returnedURL)
-				require.EqualError(t, err, "no URL was found")
-				return
+			require.NoError(t, err)
+			if tt.URLFound {
+				require.Equal(t, tt.expectedURL, *returnedURL)
+			} else {
+				require.Nil(t, returnedURL)
 			}
-			require.Equal(t, tt.expectedURL, returnedURL)
 		})
 	}
 }

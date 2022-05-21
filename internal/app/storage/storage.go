@@ -2,7 +2,6 @@ package storage
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"sync"
@@ -10,7 +9,7 @@ import (
 
 type Repository interface {
 	WriteURL(urlID string, fullURL string) error
-	GetURL(urlID string) (string, error)
+	GetURL(urlID string) (*string, error)
 }
 
 type FileStorage struct {
@@ -34,14 +33,14 @@ func (s *MemoryStorage) WriteURL(urlID string, fullURL string) error {
 	return nil
 }
 
-func (s *MemoryStorage) GetURL(urlID string) (string, error) {
+func (s *MemoryStorage) GetURL(urlID string) (*string, error) {
 	s.RLock()
 	defer s.RUnlock()
 	fullURL, ok := s.storage[urlID]
 	if !ok {
-		return fullURL, fmt.Errorf("no URL was found")
+		return nil, nil
 	}
-	return fullURL, nil
+	return &fullURL, nil
 }
 
 func (s *FileStorage) WriteURL(urlID string, fullURL string) error {
@@ -61,13 +60,13 @@ func (s *FileStorage) WriteURL(urlID string, fullURL string) error {
 	return nil
 }
 
-func (s *FileStorage) GetURL(urlID string) (string, error) {
+func (s *FileStorage) GetURL(urlID string) (*string, error) {
 	s.RLock()
 	defer s.RUnlock()
 	fileFlag := os.O_RDONLY | os.O_CREATE
 	file, err := os.OpenFile(s.filename, fileFlag, 0777)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	decoder := json.NewDecoder(file)
 	for {
@@ -78,10 +77,10 @@ func (s *FileStorage) GetURL(urlID string) (string, error) {
 			break
 		}
 		if URLItem.ID == urlID {
-			return URLItem.URL, nil
+			return &URLItem.URL, nil
 		}
 	}
-	return "", fmt.Errorf("no URL was found")
+	return nil, nil
 }
 
 func NewStorage(storageFile string) Repository {
