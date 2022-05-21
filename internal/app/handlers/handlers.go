@@ -39,7 +39,7 @@ func (h HandlerContainer) GetFullURLHandler() func(w http.ResponseWriter, r *htt
 		urlID := mux.Vars(r)["id"]
 		fullURL, err := h.URLService.GetFullURL(urlID)
 		if errors.Is(err, service.ErrorNotFound) {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 		if err != nil {

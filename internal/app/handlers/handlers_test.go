@@ -78,7 +78,7 @@ func TestGetFullURLHandler(t *testing.T) {
 		{
 			"absent URL id",
 			"http://localhost/absent-id",
-			http.StatusBadRequest,
+			http.StatusNotFound,
 		},
 	}
 	for _, tc := range tests {
