@@ -14,6 +14,7 @@ type Repository interface {
 
 type FileStorage struct {
 	filename string
+	storage  map[string]string
 	sync.RWMutex
 }
 
@@ -51,23 +52,36 @@ func (s *FileStorage) WriteURL(urlID string, fullURL string) error {
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 	encoder := json.NewEncoder(file)
 	URLItem := URLInfo{ID: urlID, URL: fullURL}
 	if err := encoder.Encode(URLItem); err != nil {
 		log.Printf("storage encoder error: %v", err)
 		return err
 	}
+	s.storage[URLItem.ID] = URLItem.URL
 	return nil
 }
 
 func (s *FileStorage) GetURL(urlID string) (*string, error) {
 	s.RLock()
 	defer s.RUnlock()
+	fullURL, ok := s.storage[urlID]
+	if !ok {
+		return nil, nil
+	}
+	return &fullURL, nil
+}
+
+func (s *FileStorage) readFile() error {
+	s.RLock()
+	defer s.RUnlock()
 	fileFlag := os.O_RDONLY | os.O_CREATE
 	file, err := os.OpenFile(s.filename, fileFlag, 0777)
 	if err != nil {
-		return nil, err
+		return err
 	}
+	defer file.Close()
 	decoder := json.NewDecoder(file)
 	for {
 		URLItem := &URLInfo{}
@@ -76,11 +90,9 @@ func (s *FileStorage) GetURL(urlID string) (*string, error) {
 			log.Printf("storage decoder error: %v", err)
 			break
 		}
-		if URLItem.ID == urlID {
-			return &URLItem.URL, nil
-		}
+		s.storage[URLItem.ID] = URLItem.URL
 	}
-	return nil, nil
+	return nil
 }
 
 func NewStorage(storageFile string) Repository {
@@ -88,6 +100,10 @@ func NewStorage(storageFile string) Repository {
 		storage := MemoryStorage{storage: make(map[string]string)}
 		return &storage
 	}
-	storage := FileStorage{filename: storageFile}
+	storage := FileStorage{
+		filename: storageFile,
+		storage:  make(map[string]string),
+	}
+	storage.readFile()
 	return &storage
 }

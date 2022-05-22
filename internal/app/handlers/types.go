@@ -1,7 +1,6 @@
 package handlers
 
-import 	srv "github.com/AndreyAD1/url-shortener/internal/app/service"
-
+import srv "github.com/AndreyAD1/url-shortener/internal/app/service"
 
 type HandlerContainer struct {
 	URLService srv.Service

@@ -9,6 +9,10 @@ import (
 )
 
 func TestNewStorage(t *testing.T) {
+	_, err := os.Create("test.txt")
+	require.NoError(t, err)
+	defer os.Remove("test.txt")
+
 	type args struct {
 		storageFile string
 	}
@@ -18,7 +22,11 @@ func TestNewStorage(t *testing.T) {
 		want Repository
 	}{
 		{"memory", args{""}, &MemoryStorage{storage: make(map[string]string)}},
-		{"file", args{"test.txt"}, &FileStorage{filename: "test.txt"}},
+		{
+			"file",
+			args{"test.txt"},
+			&FileStorage{filename: "test.txt", storage: make(map[string]string)},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
