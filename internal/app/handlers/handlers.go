@@ -53,13 +53,8 @@ func (h HandlerContainer) GetFullURLHandler() func(w http.ResponseWriter, r *htt
 
 func (h HandlerContainer) CreateShortURLApiHandler() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		requestBody, err := io.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
 		var requestInfo CreateShortURLRequest
-		if err := json.Unmarshal(requestBody, &requestInfo); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&requestInfo); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}

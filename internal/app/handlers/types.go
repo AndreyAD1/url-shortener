@@ -11,5 +11,5 @@ type CreateShortURLRequest struct {
 }
 
 type Response struct {
-	Result interface{} `json:"result"`
+	Result string `json:"result"`
 }
