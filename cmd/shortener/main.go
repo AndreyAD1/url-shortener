@@ -28,7 +28,10 @@ func main() {
 	if *fileStoragePath != "" {
 		cfg.FileStoragePath = *fileStoragePath
 	}
-	srv := server.NewServer(cfg)
-	err := srv.ListenAndServe()
+	srv, err := server.NewServer(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = srv.ListenAndServe()
 	log.Println(err)
 }

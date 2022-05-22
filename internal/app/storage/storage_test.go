@@ -9,28 +9,45 @@ import (
 )
 
 func TestNewStorage(t *testing.T) {
-	_, err := os.Create("test.txt")
-	require.NoError(t, err)
-	defer os.Remove("test.txt")
+	URLItem := URLInfo{"URL ID", "test URL"}
 
 	type args struct {
 		storageFile string
 	}
 	tests := []struct {
-		name string
-		args args
-		want Repository
+		name    string
+		args    args
+		newFile bool
+		want    Repository
 	}{
-		{"memory", args{""}, &MemoryStorage{storage: make(map[string]string)}},
+		{"memory", args{""}, true, &MemoryStorage{storage: make(map[string]string)}},
 		{
 			"file",
 			args{"test.txt"},
+			true,
 			&FileStorage{filename: "test.txt", storage: make(map[string]string)},
+		},
+		{
+			"file",
+			args{"test.txt"},
+			false,
+			&FileStorage{
+				filename: "test.txt",
+				storage:  map[string]string{URLItem.ID: URLItem.URL},
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewStorage(tt.args.storageFile)
+			if tt.newFile == false {
+				file, err := os.Create(tt.args.storageFile)
+				require.NoError(t, err)
+				err = json.NewEncoder(file).Encode(URLItem)
+				require.NoError(t, err)
+			}
+			defer os.Remove(tt.args.storageFile)
+			got, err := NewStorage(tt.args.storageFile)
+			require.NoError(t, err)
 			require.Equal(t, tt.want, got)
 		})
 	}
@@ -45,23 +62,19 @@ func TestFileStorage_WriteURL(t *testing.T) {
 		fullURL string
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		newFile bool
+		name   string
+		fields fields
+		args   args
 	}{
-		{"new storage file", fields{"test.txt"}, args{"123", "test_url"}, false},
-		{"existing storage file", fields{"test.txt"}, args{"123", "test_url"}, true},
+		{"new storage file", fields{"test.txt"}, args{"123", "test_url"}},
+		{"existing storage file", fields{"test.txt"}, args{"123", "test_url"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := FileStorage{filename: tt.fields.filename}
-			if tt.newFile == false {
-				_, err := os.Create(tt.fields.filename)
-				require.NoError(t, err)
-			}
+			s, err := NewStorage(tt.fields.filename)
+			require.NoError(t, err)
 			defer os.Remove(tt.fields.filename)
-			err := s.WriteURL(tt.args.urlID, tt.args.fullURL)
+			err = s.WriteURL(tt.args.urlID, tt.args.fullURL)
 			require.NoError(t, err)
 			storageFile, err := os.Open(tt.fields.filename)
 			require.NoError(t, err)
@@ -131,16 +144,18 @@ func TestFileStorage_GetURL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := FileStorage{filename: tt.fields.filename}
 			if tt.newFile == false {
-				_, err := os.Create(tt.fields.filename)
+				file, err := os.Create(tt.fields.filename)
 				require.NoError(t, err)
+				for _, URLItem := range tt.savedURLs {
+					err = json.NewEncoder(file).Encode(URLItem)
+					require.NoError(t, err)
+				}
 			}
 			defer os.Remove(tt.fields.filename)
-			for _, savedURL := range tt.savedURLs {
-				err := s.WriteURL(savedURL.ID, savedURL.URL)
-				require.NoError(t, err)
-			}
+			s, err := NewStorage(tt.fields.filename)
+			require.NoError(t, err)
+
 			returnedURL, err := s.GetURL(tt.args.urlID)
 			require.NoError(t, err)
 			if tt.URLFound {

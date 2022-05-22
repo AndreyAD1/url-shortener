@@ -22,6 +22,7 @@ type MemoryStorage struct {
 	storage map[string]string
 	sync.RWMutex
 }
+
 type URLInfo struct {
 	ID  string
 	URL string
@@ -47,7 +48,7 @@ func (s *MemoryStorage) GetURL(urlID string) (*string, error) {
 func (s *FileStorage) WriteURL(urlID string, fullURL string) error {
 	s.Lock()
 	defer s.Unlock()
-	fileFlag := os.O_WRONLY | os.O_CREATE | os.O_APPEND
+	fileFlag := os.O_WRONLY | os.O_APPEND
 	file, err := os.OpenFile(s.filename, fileFlag, 0777)
 	if err != nil {
 		return err
@@ -95,15 +96,17 @@ func (s *FileStorage) readFile() error {
 	return nil
 }
 
-func NewStorage(storageFile string) Repository {
+func NewStorage(storageFile string) (Repository, error) {
 	if storageFile == "" {
 		storage := MemoryStorage{storage: make(map[string]string)}
-		return &storage
+		return &storage, nil
 	}
 	storage := FileStorage{
 		filename: storageFile,
 		storage:  make(map[string]string),
 	}
-	storage.readFile()
-	return &storage
+	if err := storage.readFile(); err != nil {
+		return nil, err
+	}
+	return &storage, nil
 }

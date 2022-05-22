@@ -29,9 +29,11 @@ var testConfig = config.StartupConfig{
 func getTestServer(t *testing.T) *httptest.Server {
 	listener, err := net.Listen("tcp", testConfig.ServerAddress)
 	require.NoError(t, err)
+	handler, err := server.GetHandler(testConfig)
+	require.NoError(t, err)
 	server := &httptest.Server{
 		Listener: listener,
-		Config:   &http.Server{Handler: server.GetHandler(testConfig)},
+		Config:   &http.Server{Handler: handler},
 	}
 	server.Start()
 	return server
