@@ -20,12 +20,20 @@ import (
 
 const testURL = "https://github.com/AndreyAD1"
 
+var testConfig = config.StartupConfig{
+	ServerAddress:  "localhost:8080",
+	BaseURL:        "http://localhost:8080",
+	ShortURLLength: 10,
+}
+
 func getTestServer(t *testing.T) *httptest.Server {
-	listener, err := net.Listen("tcp", config.ServerAddress)
+	listener, err := net.Listen("tcp", testConfig.ServerAddress)
+	require.NoError(t, err)
+	handler, err := server.GetHandler(testConfig)
 	require.NoError(t, err)
 	server := &httptest.Server{
 		Listener: listener,
-		Config:   &http.Server{Handler: server.GetHandler()},
+		Config:   &http.Server{Handler: handler},
 	}
 	server.Start()
 	return server
@@ -53,9 +61,11 @@ func Test_GetShortURL(t *testing.T) {
 	require.NoError(t, err)
 	returnedURL, err := url.ParseRequestURI(string(body))
 	require.NoError(t, err)
-	assert.Equal(t, "http", returnedURL.Scheme)
-	assert.Equal(t, config.ServerAddress, returnedURL.Host)
-	assert.Equal(t, config.ShortURLLength, len(returnedURL.Path[1:]))
+	expectedURL, err := url.ParseRequestURI(testConfig.BaseURL)
+	require.NoError(t, err)
+	assert.Equal(t, expectedURL.Scheme, returnedURL.Scheme)
+	assert.Equal(t, expectedURL.Host, returnedURL.Host)
+	assert.Equal(t, testConfig.ShortURLLength, len(returnedURL.Path[1:]))
 }
 
 func getShortURL(t *testing.T, server *httptest.Server) string {
