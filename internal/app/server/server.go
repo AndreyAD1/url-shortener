@@ -44,6 +44,7 @@ func GetHandler(cfg config.StartupConfig) (http.Handler, error) {
 		"/api/shorten",
 		handlers.CreateShortURLApiHandler(),
 	)
+	router.Use(middlewares.Auth)
 	router.Use(middlewares.DecompressGzipRequest)
 	router.Use(middlewares.CompressResponseToGzip)
 	return router, nil
